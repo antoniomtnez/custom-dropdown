@@ -37,8 +37,8 @@ class _AnimatedSectionState extends State<_AnimatedSection>
     );
 
     _statusListener = (status) {
-      if (status == AnimationStatus.dismissed) {
-        Future.microtask(() {
+      if (status == AnimationStatus.dismissed && mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && context.findRenderObject() != null) {
             widget.animationDismissed();
           }
@@ -55,11 +55,20 @@ class _AnimatedSectionState extends State<_AnimatedSection>
   }
 
   void runExpand() {
-    if (!mounted) return; // protección adicional
-    if (widget.expand) {
-      animController.forward();
-    } else {
-      animController.reverse();
+    if (!mounted || !animController.isAnimating && animController.status == AnimationStatus.dismissed) return;
+    
+    try {
+      if (widget.expand) {
+        if (animController.status != AnimationStatus.completed) {
+          animController.forward();
+        }
+      } else {
+        if (animController.status != AnimationStatus.dismissed) {
+          animController.reverse();
+        }
+      }
+    } catch (e) {
+      // Ignorar errores de animación durante la navegación
     }
   }
 
@@ -71,8 +80,11 @@ class _AnimatedSectionState extends State<_AnimatedSection>
 
   @override
   void dispose() {
-    animController.removeStatusListener(_statusListener);
-    animController.dispose();
+    if (mounted) {
+      animController.stop();
+      animController.removeStatusListener(_statusListener);
+      animController.dispose();
+    }
     super.dispose();
   }
 

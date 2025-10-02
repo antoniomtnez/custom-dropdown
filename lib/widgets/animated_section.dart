@@ -38,10 +38,10 @@ class _AnimatedSectionState extends State<_AnimatedSection>
 
     _statusListener = (status) {
       if (status == AnimationStatus.dismissed) {
-        // Protección extra con mounted
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          widget.animationDismissed();
+        Future.microtask(() {
+          if (mounted && context.findRenderObject() != null) {
+            widget.animationDismissed();
+          }
         });
       }
     };

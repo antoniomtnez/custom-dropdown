@@ -38,10 +38,11 @@ class _AnimatedSectionState extends State<_AnimatedSection> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.expand) {
-      return const SizedBox.shrink();
-    }
-
-    return widget.child;
+    if (!mounted) return const SizedBox.shrink();
+    
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 0),
+      child: widget.expand ? widget.child : const SizedBox.shrink(),
+    );
   }
 }

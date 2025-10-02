@@ -245,9 +245,17 @@ class _DropdownOverlayState<T> extends State<_DropdownOverlay<T>> {
   }
 
   void onItemSelect(T value) {
-    widget.onItemSelect(value);
+    if (!mounted) return;
+    
     if (widget.dropdownType == _DropdownType.singleSelect) {
       setState(() => displayOverly = false);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          widget.onItemSelect(value);
+        }
+      });
+    } else {
+      widget.onItemSelect(value);
     }
   }
 

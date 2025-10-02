@@ -29,7 +29,9 @@ class _OverlayBuilderState extends State<_OverlayBuilder> {
   }
 
   void showOverlay() {
-    overlayController.show();
+    if(mounted) {
+      overlayController.show();
+    }
 
     if (widget.visibility != null) {
       widget.visibility!(true);
@@ -37,17 +39,13 @@ class _OverlayBuilderState extends State<_OverlayBuilder> {
   }
 
   void hideOverlay() {
-    if (!mounted) return;
-    
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        overlayController.hide();
+    if(mounted) {
+    overlayController.hide();
+  }
 
-        if (widget.visibility != null) {
-          widget.visibility!(false);
-        }
-      }
-    });
+    if (widget.visibility != null) {
+      widget.visibility!(false);
+    }
   }
 
   @override

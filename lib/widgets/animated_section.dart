@@ -7,6 +7,7 @@ class _AnimatedSection extends StatefulWidget {
   final double axisAlignment;
 
   const _AnimatedSection({
+    super.key,
     this.expand = false,
     required this.animationDismissed,
     required this.child,
@@ -17,32 +18,65 @@ class _AnimatedSection extends StatefulWidget {
   State<_AnimatedSection> createState() => _AnimatedSectionState();
 }
 
-class _AnimatedSectionState extends State<_AnimatedSection> {
+class _AnimatedSectionState extends State<_AnimatedSection>
+    with SingleTickerProviderStateMixin {
+  late AnimationController animController;
+  late Animation<double> animation;
+
   @override
   void initState() {
     super.initState();
+    prepareAnimations();
+    runExpand();
+  }
+
+  void prepareAnimations() {
+    animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.dismissed) {
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            widget.animationDismissed();
+          });
+        }
+      });
+
+    animation = CurvedAnimation(
+      parent: animController,
+      curve: Curves.linearToEaseOut,
+    );
+  }
+
+  void runExpand() {
+    if (widget.expand) {
+      animController.forward();
+    } else {
+      animController.reverse();
+    }
   }
 
   @override
   void didUpdateWidget(_AnimatedSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!widget.expand) {
-      widget.animationDismissed();
-    }
+    runExpand();
   }
 
   @override
   void dispose() {
+    animController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!mounted) return const SizedBox.shrink();
-    
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 0),
-      child: widget.expand ? widget.child : const SizedBox.shrink(),
+    return FadeTransition(
+      opacity: animation,
+      child: SizeTransition(
+        axisAlignment: widget.axisAlignment,
+        sizeFactor: animation,
+        child: widget.child,
+      ),
     );
   }
 }

@@ -135,7 +135,11 @@ class _DropdownOverlayState<T> extends State<_DropdownOverlay<T>> {
           Padding(
             padding: const EdgeInsetsDirectional.only(start: 12.0),
             child: Checkbox(
-              onChanged: (_) => onItemSelect(),
+              onChanged:(_) {
+                SchedulerBinding.instance.addPostFrameCallback((_) {
+                onItemSelect();
+                });
+              },
               value: isSelected,
               activeColor:
                   widget.decoration?.listItemDecoration?.selectedIconColor,
@@ -245,17 +249,11 @@ class _DropdownOverlayState<T> extends State<_DropdownOverlay<T>> {
   }
 
   void onItemSelect(T value) {
-    if (!mounted) return;
-    
+    widget.onItemSelect(value);
     if (widget.dropdownType == _DropdownType.singleSelect) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
       setState(() => displayOverly = false);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          widget.onItemSelect(value);
-        }
       });
-    } else {
-      widget.onItemSelect(value);
     }
   }
 
@@ -366,7 +364,9 @@ class _DropdownOverlayState<T> extends State<_DropdownOverlay<T>> {
                                 GestureDetector(
                                   behavior: HitTestBehavior.opaque,
                                   onTap: () {
+                                    SchedulerBinding.instance.addPostFrameCallback((_) {
                                     setState(() => displayOverly = false);
+                                    });
                                   },
                                   child: Padding(
                                     padding: widget.headerPadding ??
@@ -413,7 +413,9 @@ class _DropdownOverlayState<T> extends State<_DropdownOverlay<T>> {
                                   GestureDetector(
                                     behavior: HitTestBehavior.opaque,
                                     onTap: () {
+                                      SchedulerBinding.instance.addPostFrameCallback((_) {
                                       setState(() => displayOverly = false);
+                                      });
                                     },
                                     child: Padding(
                                       padding: const EdgeInsetsDirectional.only(
@@ -473,7 +475,9 @@ class _DropdownOverlayState<T> extends State<_DropdownOverlay<T>> {
                                   GestureDetector(
                                     behavior: HitTestBehavior.opaque,
                                     onTap: () {
+                                      SchedulerBinding.instance.addPostFrameCallback((_) {
                                       setState(() => displayOverly = false);
+                                      });
                                     },
                                     child: Padding(
                                       padding: const EdgeInsetsDirectional.only(
@@ -555,7 +559,11 @@ class _DropdownOverlayState<T> extends State<_DropdownOverlay<T>> {
       return Stack(
         children: [
           GestureDetector(
-            onTap: () => setState(() => displayOverly = false),
+            onTap: () {
+              SchedulerBinding.instance.addPostFrameCallback((_) {
+                setState(() => displayOverly = false);
+              });
+            },
             child: Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,

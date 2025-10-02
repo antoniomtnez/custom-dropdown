@@ -20,51 +20,32 @@ class _AnimatedSection extends StatefulWidget {
 
 class _AnimatedSectionState extends State<_AnimatedSection>
     with SingleTickerProviderStateMixin {
-  late AnimationController animController;
   late Animation<double> animation;
 
   @override
   void initState() {
     super.initState();
     prepareAnimations();
-    runExpand();
   }
 
   void prepareAnimations() {
-    animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    )..addStatusListener((status) {
-        if (status == AnimationStatus.dismissed) {
+
           SchedulerBinding.instance.addPostFrameCallback((_) {
             widget.animationDismissed();
           });
-        }
-      });
+  
 
-    animation = CurvedAnimation(
-      parent: animController,
-      curve: Curves.linearToEaseOut,
-    );
+
   }
 
-  void runExpand() {
-    if (widget.expand) {
-      animController.forward();
-    } else {
-      animController.reverse();
-    }
-  }
 
   @override
   void didUpdateWidget(_AnimatedSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    runExpand();
   }
 
   @override
   void dispose() {
-    animController.dispose();
     super.dispose();
   }
 

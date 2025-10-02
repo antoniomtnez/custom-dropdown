@@ -7,7 +7,6 @@ class _AnimatedSection extends StatefulWidget {
   final double axisAlignment;
 
   const _AnimatedSection({
-    super.key,
     this.expand = false,
     required this.animationDismissed,
     required this.child,
@@ -22,6 +21,7 @@ class _AnimatedSectionState extends State<_AnimatedSection>
     with SingleTickerProviderStateMixin {
   late AnimationController animController;
   late Animation<double> animation;
+  late void Function(AnimationStatus) _statusListener;
 
   @override
   void initState() {
@@ -34,13 +34,19 @@ class _AnimatedSectionState extends State<_AnimatedSection>
     animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
-    )..addStatusListener((status) {
-        if (status == AnimationStatus.dismissed) {
-          SchedulerBinding.instance.addPostFrameCallback((_) {
-            widget.animationDismissed();
-          });
-        }
-      });
+    );
+
+    _statusListener = (status) {
+      if (status == AnimationStatus.dismissed) {
+        // Protección extra con mounted
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          widget.animationDismissed();
+        });
+      }
+    };
+
+    animController.addStatusListener(_statusListener);
 
     animation = CurvedAnimation(
       parent: animController,
@@ -49,6 +55,7 @@ class _AnimatedSectionState extends State<_AnimatedSection>
   }
 
   void runExpand() {
+    if (!mounted) return; // protección adicional
     if (widget.expand) {
       animController.forward();
     } else {
@@ -64,6 +71,7 @@ class _AnimatedSectionState extends State<_AnimatedSection>
 
   @override
   void dispose() {
+    animController.removeStatusListener(_statusListener);
     animController.dispose();
     super.dispose();
   }
